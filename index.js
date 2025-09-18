@@ -165,7 +165,7 @@ Please analyze the code changes and provide your review. If you find issues, pro
       model: 'gpt-5',
       messages: [{ role: 'system', content: prompt }],
       response_format: {
-        type: 'json_schema', 
+        type: 'json_schema',
         json_schema: {
           schema: jsonSchema,
           name: "feedback"
@@ -173,12 +173,12 @@ Please analyze the code changes and provide your review. If you find issues, pro
       },
     });
 
-    const feedback = response.choices[0].message.content;
+    const feedback = JSON.parse(response.choices[0].message.content);
 
     core.info(`AI Review Response: ${feedback}`);
 
     // Check if the response is just "Everything looks good!"
-    if (feedback.is_ok) {
+    if (feedback.is_ok === true) {
       await octokit.rest.issues.createComment({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
@@ -187,28 +187,25 @@ Please analyze the code changes and provide your review. If you find issues, pro
       });
       core.info('No issues found - posted positive feedback');
     } else {
-      if (feedback.body && feedback.path && feedback.line) {
-        // Set default values
-        feedback.commit_id = feedback.commit_id || pr.head.sha;
-        feedback.side = feedback.side || "RIGHT";
 
-        // Post inline comment
-        await octokit.rest.pulls.createReviewComment({
-          owner: github.context.repo.owner,
-          repo: github.context.repo.repo,
-          pull_number: prNumber,
-          body: feedback.body,
-          commit_id: feedback.commit_id,
-          path: feedback.path,
-          line: feedback.line,
-          side: feedback.side,
-          start_line: feedback.start_line,
-          start_side: feedback.start_side
-        });
+      feedback.commit_id = feedback.commit_id || pr.head.sha;
+      feedback.side = feedback.side || "RIGHT";
 
-        core.info(`Posted inline comment on ${feedback.path}:${feedback.line}`);
+      await octokit.rest.pulls.createReviewComment({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        pull_number: prNumber,
+        body: feedback.body,
+        commit_id: feedback.commit_id,
+        path: feedback.path,
+        line: feedback.line,
+        side: feedback.side,
+        start_line: feedback.start_line,
+        start_side: feedback.start_side
+      });
 
-      }
+      core.info(`Posted inline comment on ${feedback.path}:${feedback.line}`);
+
     }
 
     core.info('PR review completed and feedback posted successfully!');
