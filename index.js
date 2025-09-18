@@ -187,61 +187,27 @@ Please analyze the code changes and provide your review. If you find issues, pro
       });
       core.info('No issues found - posted positive feedback');
     } else {
-      // Try to parse the response as JSON for inline comments
-      try {
-        // Look for JSON objects in the response
-        const jsonMatches = feedback.match(/\{[\s\S]*?\}/g);
+      if (feedback.body && feedback.path && feedback.line) {
+        // Set default values
+        feedback.commit_id = feedback.commit_id || pr.head.sha;
+        feedback.side = feedback.side || "RIGHT";
 
-        if (jsonMatches && jsonMatches.length > 0) {
-          for (const jsonStr of jsonMatches) {
-            try {
-              const commentData = JSON.parse(jsonStr);
-
-              // Validate required fields
-              if (commentData.body && commentData.path && commentData.line) {
-                // Set default values
-                commentData.commit_id = commentData.commit_id || pr.head.sha;
-                commentData.side = commentData.side || "RIGHT";
-
-                // Post inline comment
-                await octokit.rest.pulls.createReviewComment({
-                  owner: github.context.repo.owner,
-                  repo: github.context.repo.repo,
-                  pull_number: prNumber,
-                  body: commentData.body,
-                  commit_id: commentData.commit_id,
-                  path: commentData.path,
-                  line: commentData.line,
-                  side: commentData.side,
-                  start_line: commentData.start_line,
-                  start_side: commentData.start_side
-                });
-
-                core.info(`Posted inline comment on ${commentData.path}:${commentData.line}`);
-              }
-            } catch (parseError) {
-              core.warning(`Failed to parse JSON comment: ${parseError.message}`);
-            }
-          }
-        } else {
-          // Fallback to regular comment if no valid JSON found
-          await octokit.rest.issues.createComment({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            body: feedback,
-          });
-          core.info('Posted regular comment (no valid JSON found)');
-        }
-      } catch (error) {
-        // Fallback to regular comment
-        await octokit.rest.issues.createComment({
+        // Post inline comment
+        await octokit.rest.pulls.createReviewComment({
           owner: github.context.repo.owner,
           repo: github.context.repo.repo,
-          issue_number: prNumber,
-          body: feedback,
+          pull_number: prNumber,
+          body: feedback.body,
+          commit_id: feedback.commit_id,
+          path: feedback.path,
+          line: feedback.line,
+          side: feedback.side,
+          start_line: feedback.start_line,
+          start_side: feedback.start_side
         });
-        core.info('Posted regular comment (fallback)');
+
+        core.info(`Posted inline comment on ${feedback.path}:${feedback.line}`);
+
       }
     }
 
