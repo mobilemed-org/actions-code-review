@@ -8,14 +8,14 @@ const { z } = require('zod');
 const { zodToJsonSchema } = require('zod-to-json-schema');
 
 const responseSchema = z.object({
-  is_ok: z.boolean().description('Whether the code changes are ok or not'),
-  body: z.string().description('A string describing the issues found'),
-  commit_id: z.string().description('The commit ID associated with the pull request'),
-  path: z.string().description('The file path where the issue is found'),
-  start_line: z.number().int().description('The starting line number where the issue starts'),
-  start_side: z.enum(['LEFT', 'RIGHT']).description('The side where the issue starts (LEFT or RIGHT)'),
-  line: z.number().int().description('The line number where the issue is found'),
-  side: z.enum(['LEFT', 'RIGHT']).description('The side where the issue is found (LEFT or RIGHT)')
+  is_ok: z.boolean(),
+  body: z.string(),
+  commit_id: z.string(),
+  path: z.string(),
+  start_line: z.number().int(),
+  start_side: z.enum(['LEFT', 'RIGHT']),
+  line: z.number().int(),
+  side: z.enum(['LEFT', 'RIGHT'])
 });
 
 const jsonSchema = zodToJsonSchema(responseSchema);
@@ -106,7 +106,8 @@ Example 1 (single line comment):
     "commit_id": "${pr.head.sha}",
     "path": "file.py",
     "line": 11,
-    "side": "RIGHT"
+    "side": "RIGHT",
+    "is_ok": false
 }
 
 Example 2 (multi-line comment):
@@ -117,7 +118,14 @@ Example 2 (multi-line comment):
     "start_line": 11,
     "start_side": "RIGHT",
     "line": 25,
-    "side": "RIGHT"
+    "side": "RIGHT",
+    "is_ok": false
+}
+
+Example 3 (everything looks good):
+{
+    "body": "Everything looks good!",
+    "is_ok": true
 }
 
 Field explanations:
