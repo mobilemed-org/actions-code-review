@@ -12,7 +12,7 @@ async function run() {
     const prNumber = core.getInput('github_pr_id');
 
     core.info(`Starting PR review for PR #${prNumber}`);
-    
+
     const octokit = github.getOctokit(githubToken);
 
     // Get PR details
@@ -132,18 +132,60 @@ ${file.patch || 'No patch content available'}
 
 Existing comments to avoid duplicating:
 ${JSON.stringify([...existingComments, ...discussionComments].map(c => ({
-  body: c.body,
-  path: c.path,
-  line: c.line,
-  created_at: c.created_at
-})), null, 2)}
+      body: c.body,
+      path: c.path,
+      line: c.line,
+      created_at: c.created_at
+    })), null, 2)}
 
 Please analyze the code changes and provide your review. If you find issues, provide them in the JSON format specified above. If no issues are found, respond with "Everything looks good!"`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-5',
       messages: [{ role: 'system', content: prompt }],
       temperature: 0.1,
+      response_format: {
+        type: 'json_schema', json_schema: {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "is_ok": {
+              "type": "boolean",
+              "description": "Whether the code changes are ok or not"
+            },
+            "body": {
+              "type": "string",
+              "description": "A string describing the issues found"
+            },
+            "commit_id": {
+              "type": "string",
+              "description": "The commit ID associated with the pull request"
+            },
+            "path": {
+              "type": "string",
+              "description": "The file path where the issue is found"
+            },
+            "start_line": {
+              "type": "integer",
+              "description": "The starting line number where the issue starts"
+            },
+            "start_side": {
+              "type": "string",
+              "enum": ["LEFT", "RIGHT"],
+              "description": "The side where the issue starts (LEFT or RIGHT)"
+            },
+            "line": {
+              "type": "integer",
+              "description": "The line number where the issue is found"
+            },
+            "side": {
+              "type": "string",
+              "enum": ["LEFT", "RIGHT"],
+              "description": "The side where the issue is found (LEFT or RIGHT)"
+            }
+          }
+        }
+      },
     });
 
     const feedback = response.choices[0].message.content;
@@ -151,12 +193,12 @@ Please analyze the code changes and provide your review. If you find issues, pro
     core.info(`AI Review Response: ${feedback}`);
 
     // Check if the response is just "Everything looks good!"
-    if (feedback.trim() === "Everything looks good!") {
+    if (feedback.is_ok) {
       await octokit.rest.issues.createComment({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         issue_number: prNumber,
-        body: feedback,
+        body: feedback.body,
       });
       core.info('No issues found - posted positive feedback');
     } else {
@@ -164,18 +206,18 @@ Please analyze the code changes and provide your review. If you find issues, pro
       try {
         // Look for JSON objects in the response
         const jsonMatches = feedback.match(/\{[\s\S]*?\}/g);
-        
+
         if (jsonMatches && jsonMatches.length > 0) {
           for (const jsonStr of jsonMatches) {
             try {
               const commentData = JSON.parse(jsonStr);
-              
+
               // Validate required fields
               if (commentData.body && commentData.path && commentData.line) {
                 // Set default values
                 commentData.commit_id = commentData.commit_id || pr.head.sha;
                 commentData.side = commentData.side || "RIGHT";
-                
+
                 // Post inline comment
                 await octokit.rest.pulls.createReviewComment({
                   owner: github.context.repo.owner,
@@ -189,7 +231,7 @@ Please analyze the code changes and provide your review. If you find issues, pro
                   start_line: commentData.start_line,
                   start_side: commentData.start_side
                 });
-                
+
                 core.info(`Posted inline comment on ${commentData.path}:${commentData.line}`);
               }
             } catch (parseError) {
