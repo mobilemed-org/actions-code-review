@@ -146,7 +146,6 @@ Please analyze the code changes and provide your review. If you find issues, pro
       response_format: {
         type: 'json_schema', json_schema: {
           "schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
           "name": "feedback",
           "properties": {
             "is_ok": {
