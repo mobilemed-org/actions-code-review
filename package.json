@@ -1,0 +1,17 @@
+{
+  "name": "actions-code-review",
+  "version": "v1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Matheus Carvalho",
+  "license": "ISC",
+  "description": "Automation for Actions Code Review",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.1",
+    "openai": "^5.21.0"
+  }
+}
