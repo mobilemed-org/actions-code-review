@@ -143,7 +143,6 @@ Please analyze the code changes and provide your review. If you find issues, pro
     const response = await openai.chat.completions.create({
       model: 'gpt-5',
       messages: [{ role: 'system', content: prompt }],
-      temperature: 0.1,
       response_format: {
         type: 'json_schema', json_schema: {
           "$schema": "http://json-schema.org/draft-07/schema#",
