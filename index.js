@@ -147,6 +147,7 @@ Please analyze the code changes and provide your review. If you find issues, pro
         type: 'json_schema', json_schema: {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
+          "name": "feedback",
           "properties": {
             "is_ok": {
               "type": "boolean",
@@ -182,7 +183,8 @@ Please analyze the code changes and provide your review. If you find issues, pro
               "enum": ["LEFT", "RIGHT"],
               "description": "The side where the issue is found (LEFT or RIGHT)"
             }
-          }
+          },
+          required: ["is_ok", "body"]
         }
       },
     });
