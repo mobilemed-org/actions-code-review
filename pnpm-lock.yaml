@@ -16,13 +16,13 @@ importers:
         version: 6.0.1
       openai:
         specifier: ^5.21.0
-        version: 5.21.0(zod@4.1.9)
+        version: 5.21.0(zod@3.25.76)
       zod:
-        specifier: ^4.1.9
-        version: 4.1.9
+        specifier: ^3.25.76
+        version: 3.25.76
       zod-to-json-schema:
         specifier: ^3.24.6
-        version: 3.24.6(zod@4.1.9)
+        version: 3.24.6(zod@3.25.76)
 
 packages:
 
@@ -133,8 +133,8 @@ packages:
     peerDependencies:
       zod: ^3.24.1
 
-  zod@4.1.9:
-    resolution: {integrity: sha512-HI32jTq0AUAC125z30E8bQNz0RQ+9Uc+4J7V97gLYjZVKRjeydPgGt6dvQzFrav7MYOUGFqqOGiHpA/fdbd0cQ==}
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
 
@@ -232,9 +232,9 @@ snapshots:
     dependencies:
       wrappy: 1.0.2
 
-  openai@5.21.0(zod@4.1.9):
+  openai@5.21.0(zod@3.25.76):
     optionalDependencies:
-      zod: 4.1.9
+      zod: 3.25.76
 
   tunnel@0.0.6: {}
 
@@ -246,8 +246,8 @@ snapshots:
 
   wrappy@1.0.2: {}
 
-  zod-to-json-schema@3.24.6(zod@4.1.9):
+  zod-to-json-schema@3.24.6(zod@3.25.76):
     dependencies:
-      zod: 4.1.9
+      zod: 3.25.76
 
-  zod@4.1.9: {}
+  zod@3.25.76: {}

@@ -1,9 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const { OpenAI } = require('openai');
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
 const { z } = require('zod');
 const { zodToJsonSchema } = require('zod-to-json-schema');
 
@@ -12,10 +9,10 @@ const responseSchema = z.object({
   body: z.string(),
   commit_id: z.string(),
   path: z.string(),
-  start_line: z.number().int(),
-  start_side: z.enum(['LEFT', 'RIGHT']),
-  line: z.number().int(),
-  side: z.enum(['LEFT', 'RIGHT'])
+  start_line: z.number(),
+  start_side: z.string(),
+  line: z.number(),
+  side: z.string()
 });
 
 const jsonSchema = zodToJsonSchema(responseSchema);
@@ -168,9 +165,10 @@ Please analyze the code changes and provide your review. If you find issues, pro
       model: 'gpt-5',
       messages: [{ role: 'system', content: prompt }],
       response_format: {
-        type: 'json_schema', json_schema: {
-          "schema": jsonSchema,
-          "name": "feedback"
+        type: 'json_schema', 
+        json_schema: {
+          schema: jsonSchema,
+          name: "feedback"
         }
       },
     });
