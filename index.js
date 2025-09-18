@@ -4,6 +4,22 @@ const { OpenAI } = require('openai');
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { z } = require('zod');
+const { zodToJsonSchema } = require('zod-to-json-schema');
+
+const responseSchema = z.object({
+  is_ok: z.boolean().description('Whether the code changes are ok or not'),
+  body: z.string().description('A string describing the issues found'),
+  commit_id: z.string().description('The commit ID associated with the pull request'),
+  path: z.string().description('The file path where the issue is found'),
+  start_line: z.number().int().description('The starting line number where the issue starts'),
+  start_side: z.enum(['LEFT', 'RIGHT']).description('The side where the issue starts (LEFT or RIGHT)'),
+  line: z.number().int().description('The line number where the issue is found'),
+  side: z.enum(['LEFT', 'RIGHT']).description('The side where the issue is found (LEFT or RIGHT)')
+});
+
+const jsonSchema = zodToJsonSchema(responseSchema);
+
 
 async function run() {
   try {
@@ -145,45 +161,8 @@ Please analyze the code changes and provide your review. If you find issues, pro
       messages: [{ role: 'system', content: prompt }],
       response_format: {
         type: 'json_schema', json_schema: {
-          "schema": "http://json-schema.org/draft-07/schema#",
-          "name": "feedback",
-          "properties": {
-            "is_ok": {
-              "type": "boolean",
-              "description": "Whether the code changes are ok or not"
-            },
-            "body": {
-              "type": "string",
-              "description": "A string describing the issues found"
-            },
-            "commit_id": {
-              "type": "string",
-              "description": "The commit ID associated with the pull request"
-            },
-            "path": {
-              "type": "string",
-              "description": "The file path where the issue is found"
-            },
-            "start_line": {
-              "type": "integer",
-              "description": "The starting line number where the issue starts"
-            },
-            "start_side": {
-              "type": "string",
-              "enum": ["LEFT", "RIGHT"],
-              "description": "The side where the issue starts (LEFT or RIGHT)"
-            },
-            "line": {
-              "type": "integer",
-              "description": "The line number where the issue is found"
-            },
-            "side": {
-              "type": "string",
-              "enum": ["LEFT", "RIGHT"],
-              "description": "The side where the issue is found (LEFT or RIGHT)"
-            }
-          },
-          required: ["is_ok", "body"]
+          "schema": jsonSchema,
+          "name": "feedback"
         }
       },
     });
